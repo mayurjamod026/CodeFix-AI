@@ -1,0 +1,6 @@
+{
+  "name": "CodeFix AI",
+  "description": "AI-powered coding assistant for BCA and computer science students. Write, run in sandbox, analyze, fix, and learn code.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

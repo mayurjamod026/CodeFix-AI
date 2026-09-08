@@ -1,0 +1,11 @@
+.gradle/
+.build-outputs/
+.idea/
+.git/
+.gitignore
+build/
+app/build/
+*.keystore
+*.base64
+*.apk
+*.aab

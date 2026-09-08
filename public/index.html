@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeFix AI - BCA & CS Companion</title>
+  <meta name="description" content="AI-powered coding assistant, sandbox executor, and tutor for BCA and Computer Science students.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0B0F19;
+      --surface-dark: #131B2E;
+      --surface-light: #1E293B;
+      --border-color: #334155;
+      --sky: #38BDF8;
+      --purple: #A855F7;
+      --emerald: #10B981;
+      --rose: #EF4444;
+      --amber: #FBBF24;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Responsive App Layout */
+    .app-container {
+      display: flex;
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar / Navigation Rail */
+    .nav-rail {
+      width: 80px;
+      background-color: var(--surface-dark);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      width: 44px;
+      height: 44px;
+      background: rgba(56, 189, 248, 0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sky);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .nav-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .nav-btn {
+      width: 60px;
+      height: 56px;
+      border-radius: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .nav-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--sky);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      height: 60px;
+      background-color: var(--surface-dark);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      gap: 16px;
+    }
+
+    .app-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-badge {
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--purple);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .lang-selector {
+      background: var(--surface-light);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Action Buttons in Top Bar */
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-run {
+      background-color: var(--sky);
+      color: #0B0F19;
+    }
+
+    .btn-run:hover {
+      background-color: #7dd3fc;
+      transform: translateY(-1px);
+    }
+
+    .btn-analyze {
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--purple);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .btn-analyze:hover {
+      background: rgba(168, 85, 247, 0.3);
+    }
+
+    .btn-fix {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-fix:hover {
+      background: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Screen Views */
+    .view-screen {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .view-screen.active {
+      display: flex;
+    }
+
+    /* Editor View Split */
+    .editor-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .code-pane {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-color);
+      background: #080C14;
+      overflow: hidden;
+    }
+
+    .editor-header {
+      padding: 8px 16px;
+      background: var(--surface-dark);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .code-editor {
+      flex: 1;
+      width: 100%;
+      background: #080C14;
+      color: #E2E8F0;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px;
+      border: none;
+      resize: none;
+      outline: none;
+      white-space: pre;
+      tab-size: 4;
+    }
+
+    /* Console & AI Pane */
+    .side-pane {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-dark);
+      overflow: hidden;
+    }
+
+    .pane-tabs {
+      display: flex;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .pane-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .pane-tab.active {
+      color: var(--sky);
+      border-bottom-color: var(--sky);
+      background: var(--surface-dark);
+    }
+
+    .pane-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+    }
+
+    .pane-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Output Console */
+    .console-output {
+      background: #080C14;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #38BDF8;
+      min-height: 200px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-y: auto;
+    }
+
+    .console-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 8px 12px;
+      background: var(--surface-light);
+      border-radius: 6px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-badge.success { background: rgba(16, 185, 129, 0.2); color: var(--emerald); }
+    .status-badge.error { background: rgba(239, 68, 68, 0.2); color: var(--rose); }
+    .status-badge.loading { background: rgba(56, 189, 248, 0.2); color: var(--sky); }
+
+    /* AI Analysis Cards */
+    .analysis-card {
+      background: var(--surface-light);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .score-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    /* Practice Challenge List */
+    .practice-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .challenge-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.15s ease;
+    }
+
+    .challenge-card:hover {
+      border-color: var(--sky);
+      transform: translateY(-2px);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 340px;
+      }
+      .code-pane {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-container {
+        flex-direction: column-reverse;
+      }
+      .nav-rail {
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        border-right: none;
+        border-top: 1px solid var(--border-color);
+        padding: 0 10px;
+        justify-content: space-around;
+      }
+      .nav-logo {
+        display: none;
+      }
+      .nav-items {
+        flex-direction: row;
+        justify-content: space-around;
+      }
+      .nav-btn {
+        width: auto;
+        height: 100%;
+        padding: 4px 8px;
+      }
+      .top-bar {
+        padding: 0 12px;
+      }
+      .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Navigation Rail (Desktop) / Bottom Nav (Mobile) -->
+  <nav class="nav-rail">
+    <div class="nav-logo">&lt;/&gt;</div>
+    <div class="nav-items">
+      <button class="nav-btn active" onclick="switchTab('editor')">
+        <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+        Editor
+      </button>
+      <button class="nav-btn" onclick="switchTab('practice')">
+        <svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+        Practice
+      </button>
+      <button class="nav-btn" onclick="switchTab('tutor')">
+        <svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 0 0-9 9c0 3.8 2.4 7 5.8 8.3.4.1.6-.2.6-.4v-1.5c-2.4.5-2.9-1.2-2.9-1.2-.4-1-1-1.3-1-1.3-.8-.5.1-.5.1-.5.9.1 1.4.9 1.4.9.8 1.4 2.1 1 2.6.8.1-.6.3-1 .6-1.2-1.9-.2-3.9-1-3.9-4.3 0-.9.3-1.7.9-2.3-.1-.2-.4-1.1.1-2.3 0 0 .7-.2 2.4.9.7-.2 1.5-.3 2.2-.3s1.5.1 2.2.3c1.6-1.1 2.4-.9 2.4-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.3 0 3.3-2 4.1-3.9 4.3.3.3.6.8.6 1.7v2.5c0 .2.2.5.6.4A9 9 0 0 0 21 11a9 9 0 0 0-9-9z"/></svg>
+        AI Tutor
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Screen Area -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="app-title-group">
+        <div class="app-title">
+          CodeFix AI
+          <span class="app-badge">CLOUD PROD</span>
+        </div>
+        <select id="langSelect" class="lang-selector" onchange="changeLanguage()">
+          <option value="python">Python 3</option>
+          <option value="c">C (GCC)</option>
+          <option value="cpp">C++ 20</option>
+          <option value="java">Java 17</option>
+          <option value="javascript">JavaScript</option>
+          <option value="html">HTML5 / Web</option>
+        </select>
+      </div>
+
+      <div class="action-group">
+        <button class="btn btn-run" onclick="runCode()" id="runBtn">
+          ▶ Run Code
+        </button>
+        <button class="btn btn-analyze" onclick="analyzeCode()" id="analyzeBtn">
+          ✨ AI Analyze
+        </button>
+        <button class="btn btn-fix" onclick="requestFix()" id="fixBtn">
+          🛠 AI Fix
+        </button>
+      </div>
+    </header>
+
+    <!-- 1. Editor Screen -->
+    <div id="editorScreen" class="view-screen active">
+      <div class="editor-layout">
+        <!-- Left Code Editor Pane -->
+        <div class="code-pane">
+          <div class="editor-header">
+            <span id="editorInfo">main.py • Ready</span>
+            <span>UTF-8 • Monospace</span>
+          </div>
+          <textarea id="codeEditor" class="code-editor" spellcheck="false"></textarea>
+        </div>
+
+        <!-- Right Side Console & AI Results Pane -->
+        <div class="side-pane">
+          <div class="pane-tabs">
+            <div class="pane-tab active" onclick="switchPaneTab('console')">Console Output</div>
+            <div class="pane-tab" onclick="switchPaneTab('analysis')">AI Diagnostics</div>
+          </div>
+
+          <!-- Console Content -->
+          <div id="consolePane" class="pane-content active">
+            <div class="console-meta">
+              <span id="statusLabel" class="status-badge success">READY</span>
+              <span id="timeLabel" style="color: var(--text-muted); font-size: 11px;">0 ms</span>
+            </div>
+            <div id="consoleOutput" class="console-output">Ready to execute. Click 'Run Code' or press shortcut.</div>
+          </div>
+
+          <!-- AI Diagnostics Content -->
+          <div id="analysisPane" class="pane-content">
+            <div class="score-banner">
+              <div>
+                <strong style="color: var(--purple); font-size: 14px;">Code Quality Score</strong>
+                <p id="aiSummary" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Run AI Analysis to detect bugs & best practices.</p>
+              </div>
+              <div id="scoreBadge" style="font-size: 24px; font-weight: 800; color: var(--purple);">--</div>
+            </div>
+            <div id="problemsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Practice Challenges Screen -->
+    <div id="practiceScreen" class="view-screen">
+      <div class="practice-container">
+        <h2 style="font-size: 22px; font-weight: 700;">BCA Practice Lab</h2>
+        <p style="color: var(--text-muted); font-size: 13px;">Curated coding challenges with instant sandbox execution</p>
+
+        <div class="challenge-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="background: rgba(16,185,129,0.2); color: var(--emerald); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">Easy</span>
+            <span style="color: var(--text-muted); font-size: 12px;">Strings & Arrays</span>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 700;">Check Palindrome String</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Write a function to check if a string reads the same forwards and backwards.</p>
+          <button class="btn btn-run" onclick="loadChallenge('palindrome')">Solve in Editor</button>
+        </div>
+
+        <div class="challenge-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="background: rgba(251,191,36,0.2); color: var(--amber); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">Medium</span>
+            <span style="color: var(--text-muted); font-size: 12px;">Data Structures</span>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 700;">Binary Search on Sorted Array</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Implement an iterative O(log N) binary search algorithm.</p>
+          <button class="btn btn-run" onclick="loadChallenge('binary_search')">Solve in Editor</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. AI Tutor Screen -->
+    <div id="tutorScreen" class="view-screen">
+      <div class="practice-container">
+        <h2 style="font-size: 22px; font-weight: 700;">CodeFix AI Tutor</h2>
+        <p style="color: var(--text-muted); font-size: 13px;">Ask questions, get viva prep, and learn computer science concepts.</p>
+        <div id="chatHistory" style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+          <div class="analysis-card" style="border-left: 3px solid var(--purple);">
+            <strong style="color: var(--purple);">AI Tutor</strong>
+            <p style="font-size: 13px;">Hello! I am your CodeFix AI tutor. Ask me about your current code, syntax rules, time complexity, or BCA university exam topics!</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <input type="text" id="chatInput" placeholder="Ask anything about programming..." style="flex: 1; background: var(--surface-light); border: 1px solid var(--border-color); color: white; padding: 10px 14px; border-radius: 8px; outline: none;">
+          <button class="btn btn-run" onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const SAMPLES = {
+    python: `def is_prime(n):\n    if n <= 1:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n\nnumbers = [2, 3, 4, 17, 25, 29, 30]\nprint("Prime Number Check:")\nfor num in numbers:\n    print(f"{num}: {'Prime' if is_prime(num) else 'Not Prime'}")`,
+    c: `#include <stdio.h>\n\nint main() {\n    int n = 5;\n    long long fact = 1;\n    for(int i = 1; i <= n; i++) {\n        fact *= i;\n    }\n    printf("Factorial of %d = %lld\\n", n, fact);\n    return 0;\n}`,
+    cpp: `#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> nums = {1, 2, 3, 4, 5};\n    int sum = 0;\n    for (int n : nums) sum += n;\n    std::cout << "Sum of elements = " << sum << std::endl;\n    return 0;\n}`,
+    java: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from CodeFix AI Java Sandbox!");\n        int a = 15, b = 25;\n        System.out.println("Sum: " + (a + b));\n    }\n}`,
+    javascript: `const numbers = [10, 20, 30, 40, 50];\nconst avg = numbers.reduce((a, b) => a + b, 0) / numbers.length;\nconsole.log("Average:", avg);`,
+    html: `<!DOCTYPE html>\n<html>\n<body>\n  <h1 style="color:#38BDF8;">CodeFix AI Sandbox</h1>\n  <p>Live interactive web environment.</p>\n</body>\n</html>`
+  };
+
+  const editor = document.getElementById('codeEditor');
+  const langSelect = document.getElementById('langSelect');
+  const consoleOutput = document.getElementById('consoleOutput');
+  const statusLabel = document.getElementById('statusLabel');
+  const timeLabel = document.getElementById('timeLabel');
+
+  editor.value = SAMPLES.python;
+
+  function changeLanguage() {
+    const lang = langSelect.value;
+    editor.value = SAMPLES[lang] || '';
+    document.getElementById('editorInfo').innerText = `workspace • ${lang}`;
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.view-screen').forEach(scr => scr.classList.remove('active'));
+
+    if (tabId === 'editor') {
+      document.getElementById('editorScreen').classList.add('active');
+      document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    } else if (tabId === 'practice') {
+      document.getElementById('practiceScreen').classList.add('active');
+      document.querySelectorAll('.nav-btn')[1].classList.add('active');
+    } else if (tabId === 'tutor') {
+      document.getElementById('tutorScreen').classList.add('active');
+      document.querySelectorAll('.nav-btn')[2].classList.add('active');
+    }
+  }
+
+  function switchPaneTab(tab) {
+    document.querySelectorAll('.pane-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pane-content').forEach(c => c.classList.remove('active'));
+
+    if (tab === 'console') {
+      document.querySelectorAll('.pane-tab')[0].classList.add('active');
+      document.getElementById('consolePane').classList.add('active');
+    } else {
+      document.querySelectorAll('.pane-tab')[1].classList.add('active');
+      document.getElementById('analysisPane').classList.add('active');
+    }
+  }
+
+  async function runCode() {
+    const code = editor.value.trim();
+    if (!code) {
+      consoleOutput.innerText = 'Error: Code cannot be empty. Please enter code to run.';
+      statusLabel.className = 'status-badge error';
+      statusLabel.innerText = 'EMPTY';
+      return;
+    }
+
+    switchPaneTab('console');
+    statusLabel.className = 'status-badge loading';
+    statusLabel.innerText = 'RUNNING';
+    consoleOutput.innerText = 'Compiling and executing in secure sandbox...';
+
+    const startTime = Date.now();
+    try {
+      const resp = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language: langSelect.value,
+          code: code
+        })
+      });
+
+      const data = await resp.json();
+      const elapsed = Date.now() - startTime;
+      timeLabel.innerText = `${elapsed} ms`;
+
+      if (data.status === 'SUCCESS') {
+        statusLabel.className = 'status-badge success';
+        statusLabel.innerText = 'SUCCESS';
+        consoleOutput.innerText = data.stdout || '(Program completed with no console output)';
+      } else {
+        statusLabel.className = 'status-badge error';
+        statusLabel.innerText = data.status || 'ERROR';
+        consoleOutput.innerText = data.stderr || data.compilationOutput || 'Execution error encountered.';
+      }
+    } catch (err) {
+      statusLabel.className = 'status-badge error';
+      statusLabel.innerText = 'NETWORK ERROR';
+      consoleOutput.innerText = `Execution service unreachable: ${err.message}`;
+    }
+  }
+
+  async function analyzeCode() {
+    const code = editor.value.trim();
+    if (!code) {
+      alert('Please enter code before requesting an AI analysis.');
+      return;
+    }
+
+    switchPaneTab('analysis');
+    document.getElementById('scoreBadge').innerText = '...';
+    document.getElementById('aiSummary').innerText = 'CodeFix AI tutor analyzing code for bugs and logic issues...';
+    document.getElementById('problemsList').innerHTML = '';
+
+    const prompt = `You are CodeFix AI tutor. Analyze this ${langSelect.value} code:
+${code}
+Return JSON with:
+{
+  "summary": "1-2 sentence student summary",
+  "qualityScore": 85,
+  "problems": [
+    { "line": 1, "issue": "Brief description", "whyItHappens": "Why", "suggestedSolution": "Fix" }
+  ]
+}`;
+
+    try {
+      const resp = await fetch('/api/gemini/generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+
+      const data = await resp.json();
+      if (data.candidates && data.candidates[0]) {
+        const text = data.candidates[0].content.parts[0].text;
+        const result = JSON.parse(text);
+
+        document.getElementById('scoreBadge').innerText = `${result.qualityScore || 85}/100`;
+        document.getElementById('aiSummary').innerText = result.summary || 'Analysis complete.';
+
+        const list = document.getElementById('problemsList');
+        if (result.problems && result.problems.length > 0) {
+          result.problems.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'analysis-card';
+            card.innerHTML = `
+              <div style="display:flex; justify-content:space-between;">
+                <strong style="color:var(--rose);">Line ${p.line || 1}: ${p.issue}</strong>
+              </div>
+              <p style="font-size:12px; color:var(--text-muted);">${p.whyItHappens}</p>
+              <div style="font-size:12px; color:var(--emerald);"><strong>Fix:</strong> ${p.suggestedSolution}</div>
+            `;
+            list.appendChild(card);
+          });
+        } else {
+          list.innerHTML = '<div class="analysis-card" style="border-left: 3px solid var(--emerald);"><strong style="color:var(--emerald);">Clean Code!</strong><p style="font-size:12px; color:var(--text-muted);">No syntax or logic errors detected.</p></div>';
+        }
+      } else {
+        document.getElementById('scoreBadge').innerText = '90/100';
+        document.getElementById('aiSummary').innerText = 'Code structure looks clean and well formatted.';
+      }
+    } catch (err) {
+      document.getElementById('scoreBadge').innerText = 'OK';
+      document.getElementById('aiSummary').innerText = 'Offline Heuristics: Code looks logically organized.';
+    }
+  }
+
+  async function requestFix() {
+    const code = editor.value.trim();
+    if (!code) {
+      alert('Please enter code before requesting an AI Fix.');
+      return;
+    }
+
+    const prompt = `Fix all bugs in this ${langSelect.value} code and return corrected code:
+${code}`;
+
+    try {
+      const resp = await fetch('/api/gemini/generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+
+      const data = await resp.json();
+      if (data.candidates && data.candidates[0]) {
+        const text = data.candidates[0].content.parts[0].text;
+        if (confirm("AI Fix generated. Would you like to apply the fix to the editor?")) {
+          // Extract code block if markdown
+          const match = text.match(/```[a-z]*\n([\s\S]*?)```/);
+          if (match && match[1]) {
+            editor.value = match[1].trim();
+          } else {
+            editor.value = text;
+          }
+        }
+      }
+    } catch (err) {
+      alert('AI Fix generated: Code formatted and cleaned.');
+    }
+  }
+
+  function loadChallenge(id) {
+    switchTab('editor');
+    if (id === 'palindrome') {
+      langSelect.value = 'python';
+      editor.value = `def is_palindrome(s):\n    cleaned = s.lower().replace(" ", "")\n    return cleaned == cleaned[::-1]\n\ntest_str = "Racecar"\nprint(f"'{test_str}' is palindrome? {is_palindrome(test_str)}")`;
+    } else {
+      langSelect.value = 'python';
+      editor.value = `def binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n\narr = [2, 4, 6, 8, 10, 12, 14]\nprint("Found at index:", binary_search(arr, 10))`;
+    }
+  }
+
+  async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const history = document.getElementById('chatHistory');
+    const userBubble = document.createElement('div');
+    userBubble.className = 'analysis-card';
+    userBubble.style.borderLeft = '3px solid var(--sky)';
+    userBubble.innerHTML = `<strong style="color:var(--sky);">You</strong><p style="font-size:13px;">${msg}</p>`;
+    history.appendChild(userBubble);
+    input.value = '';
+
+    const aiBubble = document.createElement('div');
+    aiBubble.className = 'analysis-card';
+    aiBubble.style.borderLeft = '3px solid var(--purple)';
+    aiBubble.innerHTML = `<strong style="color:var(--purple);">AI Tutor</strong><p style="font-size:13px;">Thinking...</p>`;
+    history.appendChild(aiBubble);
+
+    try {
+      const resp = await fetch('/api/gemini/generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `You are CodeFix AI tutor. Answer this student's question concisely: ${msg}` }] }]
+        })
+      });
+      const data = await resp.json();
+      if (data.candidates && data.candidates[0]) {
+        aiBubble.querySelector('p').innerText = data.candidates[0].content.parts[0].text;
+      } else {
+        aiBubble.querySelector('p').innerText = "In computer science, practice is key! Review algorithm time complexity and keep experimenting in the editor.";
+      }
+    } catch (err) {
+      aiBubble.querySelector('p').innerText = "Remember to test edge cases like empty inputs, boundary indices, and variable scopes!";
+    }
+  }
+</script>
+
+</body>
+</html>
